@@ -1,6 +1,8 @@
 import pyaudio
 import wave
 import numpy
+import time
+from WaveUtil import WaveUtil
 
 # instantiate PyAudio (1)
 p = pyaudio.PyAudio()
@@ -14,27 +16,38 @@ sounds = [sound1, sound2, sound3]
 data = [sound.readframes(sound.getnframes()) for sound in sounds]
 decodedData = [numpy.fromstring(d, numpy.int16) for d in data]
 
-combined_data = numpy.append(decodedData[1], decodedData[2])
-combined_data = numpy.append(combined_data, combined_data)
+backing_track = WaveUtil(decodedData[0], total_frames=len(decodedData[0]))
+pattern_track = WaveUtil(decodedData[1], total_frames=len(decodedData[0]))
+pattern_track.addTrack(decodedData[2])
+pattern_track.addTrack(decodedData[1])
+pattern_track.addTrack(decodedData[2])
 
-print(len(decodedData[0]))
-print(len(decodedData[1]))
-print(len(combined_data))
 
-# mix as much as possible
-n = min(map(len, [decodedData[0], combined_data]))
-# mix by taking the mean of the two audio samples
-mix = (decodedData[0][:n] * 0.5 + combined_data[:n] * 0.5).astype(numpy.int16)
-print(len(mix))
+# define callback (2)
+def callback(in_data, frame_count, time_info, status):
+    data1 = backing_track.readframes(frame_count)
+    data2 = pattern_track.readframes(frame_count)
+
+    # mix as much as possible
+    n = min(map(len, [data1, data2]))
+    # mix by taking the mean of the two audio samples
+    mix = (data1[:n] * 0.5 + data2[:n] * 0.5).astype(numpy.int16)
+    return (mix.tostring(), pyaudio.paContinue)
+
 
 # open stream using callback (3)
 stream = p.open(format=p.get_format_from_width(sound1.getsampwidth()),
                 channels=sound1.getnchannels(),
                 rate=sound1.getframerate(),
-                output=True)
+                output=True,
+                stream_callback=callback)
 
-# play stream (3)
-stream.write(mix.tostring())
+# start the stream (4)
+stream.start_stream()
+
+# wait for stream to finish (5)
+while stream.is_active():
+    time.sleep(0.1)
 
 # stop stream (6)
 stream.stop_stream()
