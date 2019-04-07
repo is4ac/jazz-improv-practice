@@ -47,3 +47,6 @@ class WaveUtil:
 
     def updateTotalFrames(self, total_frames):
         self.total_frames = total_frames
+
+    def setCurrentFrame(self, frame):
+        self.current_frame = frame
