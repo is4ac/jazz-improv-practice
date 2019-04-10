@@ -2,8 +2,12 @@ import numpy
 
 
 class WaveUtil:
-    def __init__(self, data, total_frames=3763200):
-        self.data = [data] # store in an array so we can concatenate tracks later
+    def __init__(self, data=None, total_frames=3763200):
+        if data is None:
+            self.data = []
+        else:
+            self.data = [data] # store in an array so we can concatenate tracks later
+
         self.total_frames = total_frames # default value is 16 measures in 44,100 Hz
         self.current_frame = 0
         self.joined_data = self.joinData()
@@ -50,3 +54,7 @@ class WaveUtil:
 
     def setCurrentFrame(self, frame):
         self.current_frame = frame
+
+    def clearTracks(self):
+        self.data = []
+        self.joined_data = self.joinData()

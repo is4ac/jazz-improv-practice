@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 import re, argparse
 from smartcard.System import readers
-import datetime, sys
 
 
 #ACS ACR122U NFC Reader
@@ -11,6 +10,7 @@ import datetime, sys
 COMMAND = [0xFF, 0xCA, 0x00, 0x00, 0x00] #handshake cmd needed to initiate data transfer
 DATA_PAGE = 6 # the page that the custom data is written to
 waiting_for_beacon = 1 # tells read to wait
+did_read_before = False # keeps track of consecutive reads so you don't double read a card
 reader = None # the card reader object
 args = None # script command arguments
 
@@ -45,7 +45,8 @@ def stringParser(dataCurr):
         return dataCurr
 
 
-def readTag(page):
+def readTag(page=DATA_PAGE):
+    global did_read_before # get global variable of consecutive read flag
     readingLoop = 1
     while(readingLoop):
         try:
@@ -57,14 +58,18 @@ def readTag(page):
             dataCurr = stringParser(resp)
 
             #only allows new tags to be worked so no duplicates
-            if(dataCurr is not None):
+            if dataCurr is not None and not did_read_before:
+                did_read_before = True
                 print(dataCurr)
                 return dataCurr
+            elif did_read_before:
+                continue
             else:
                 print("Something went wrong. Page " + str(page))
                 break
         except Exception as e:
             if waiting_for_beacon == 1:
+                did_read_before = False
                 continue
             else:
                 readingLoop=0
@@ -171,9 +176,7 @@ def improvPrototype():
     print(card1, card2)
 
 
-if __name__ == "__main__":
-    setup()
-
+def main():
     command = input("Choose an option:\n[1] Read or write to cards\n[2] Run music improv prototype\n[Q]uit\n")
 
     # run the read/write loop function if they choose 1
@@ -181,3 +184,10 @@ if __name__ == "__main__":
         readAndWriteLoop()
     elif command == "2":
         improvPrototype()
+
+# call setup
+setup()
+
+if __name__ == "__main__":
+    main()
+
