@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Button
+from tkinter import Tk, Label, Button, StringVar
 from audioPlayer import AudioPlayer
 from NFCReader import readTag
 from threading import Thread
@@ -15,23 +15,29 @@ class ImprovApp:
         self.master = master
         master.title("Jazz Patterns Practice")
 
-        self.label = Label(master, text="Scan the jazz pattern cards and play along!")
-        self.label.pack()
+        self.playing = False
 
-        self.play_button = Button(master, text="Play", command=self.play)
-        self.play_button.pack()
+        self.label = Label(master, text="Scan the jazz pattern cards and play along!\n\n\nSelected patterns:\n\n")
+        self.label.grid(columnspan=8)
 
-        self.pause_button = Button(master, text="Pause", command=self.pause)
-        self.pause_button.pack()
+        self.pattern_labels = []
+        for i in range(4):
+            self.pattern_labels.append(Label(master, text="[none]\n\n"))
+            self.pattern_labels[i].grid(row=2, columnspan=2, column=i*2)
+
+        self.patterns_count = 0
+
+        self.play_pause_button = Button(master, text="Play", command=self.playAndPause)
+        self.play_pause_button.grid(row=5, column=2)
 
         self.stop_button = Button(master, text="Stop", command=self.stop)
-        self.stop_button.pack()
+        self.stop_button.grid(row=5, column=3)
 
         self.clear_button = Button(master, text="Clear", command=self.clear)
-        self.clear_button.pack()
+        self.clear_button.grid(row=5, column=4)
 
         self.close_button = Button(master, text="Close", command=master.quit)
-        self.close_button.pack()
+        self.close_button.grid(row=5, column=5)
 
         self.audioPlayer = AudioPlayer()
 
@@ -40,19 +46,19 @@ class ImprovApp:
         t.daemon = True
         t.start()
 
-    def play(self):
+    def playAndPause(self):
         """
         Starts playing the music and patterns
         """
-        print("Play!")
-        self.audioPlayer.play()
+        self.playing = not self.playing
+        print("Play/Pause!")
 
-    def pause(self):
-        """
-        Pauses the music
-        """
-        print("Pause!")
-        self.audioPlayer.pause()
+        if self.playing:
+            self.audioPlayer.play()
+            self.play_pause_button.config(text="Pause")
+        else:
+            self.audioPlayer.pause()
+            self.play_pause_button.config(text="Play")
 
     def stop(self):
         """
@@ -61,6 +67,10 @@ class ImprovApp:
         print("Stop!")
         self.audioPlayer.stop()
 
+        if self.playing:
+            self.play_pause_button.config(text="Play")
+            self.playing = False
+
     def clear(self):
         """
         Clears all pattern tracks and stops the music
@@ -68,6 +78,10 @@ class ImprovApp:
         print("Clear!")
         self.stop()
         self.audioPlayer.clearTracks()
+        self.patterns_count = 0
+
+        for label in self.pattern_labels:
+            label.config(text="[none]\n\n")
 
     def listenNFC(self):
         # infinite loop, keep listening until the program quits
@@ -79,7 +93,15 @@ class ImprovApp:
             if 1 <= number <= NUMBER_OF_PATTERNS:
                 # stop the audio first so it doesn't insert the pattern into a weird spot
                 self.stop()
+
+                # add the audio track of the selected pattern
                 self.audioPlayer.addPattern(PATTERN_FILE + str(number) + ".wav")
+
+                # change the label on the screen
+                self.pattern_labels[self.patterns_count].config(text="Pattern " + str(number) + "\n\n")
+
+                # update the number of patterns currently scanned
+                self.patterns_count += 1
 
 
 root = Tk()
