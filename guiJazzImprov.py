@@ -7,7 +7,7 @@ from threading import Thread
 # the beginning file path for all pattern track files. ends with a number + .wav
 PATTERN_FILE = "audio/C_90_pattern_"
 # total number of patterns. update this when adding more pattern cards
-NUMBER_OF_PATTERNS = 4
+NUMBER_OF_PATTERNS = 6
 
 
 class ImprovApp:
