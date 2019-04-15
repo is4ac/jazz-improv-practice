@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Button, StringVar
+from tkinter import Tk, Label, Button, PhotoImage
 from audioPlayer import AudioPlayer
 from NFCReader import readTag
 from threading import Thread
@@ -8,6 +8,8 @@ from threading import Thread
 PATTERN_FILE = "audio/C_90_pattern_"
 # total number of patterns. update this when adding more pattern cards
 NUMBER_OF_PATTERNS = 6
+# number of patterns that can be selected and played
+PATTERN_SLOTS = 4
 
 
 class ImprovApp:
@@ -17,16 +19,22 @@ class ImprovApp:
 
         self.playing = False
 
-        self.label = Label(master, text="Scan the jazz pattern cards and play along!\n\n\nSelected patterns:\n\n")
+        self.label = Label(master, text="Scan the improv pattern cards and play along!\n\nSelected patterns:\n")
         self.label.grid(columnspan=8)
 
         self.pattern_labels = []
-        for i in range(4):
-            self.pattern_labels.append(Label(master, text="[none]\n\n"))
+        for i in range(PATTERN_SLOTS):
+            # initialize the pattern slots to rest images
+            photo = PhotoImage(file="images/pattern_rest.gif")
+            patternImage = Label(master, image=photo)
+            patternImage.photo = photo
+            self.pattern_labels.append(patternImage)
             self.pattern_labels[i].grid(row=2, columnspan=2, column=i*2)
 
+        # initialize the number of currently selected patterns
         self.patterns_count = 0
 
+        # add all the necessary buttons
         self.play_pause_button = Button(master, text="Play", command=self.playAndPause)
         self.play_pause_button.grid(row=5, column=2)
 
@@ -81,27 +89,42 @@ class ImprovApp:
         self.patterns_count = 0
 
         for label in self.pattern_labels:
-            label.config(text="[none]\n\n")
+            # reset the label images back to rests
+            photo = PhotoImage(file="images/pattern_rest.gif")
+            label.config(image=photo)
+            label.photo = photo
 
     def listenNFC(self):
         # infinite loop, keep listening until the program quits
         # happens in another thread from the main GUI loop
         while True:
+            # read the card data from the scanner
             card = readTag()
             number = int(card) # extract the int value from the string
 
-            if 1 <= number <= NUMBER_OF_PATTERNS:
-                # stop the audio first so it doesn't insert the pattern into a weird spot
-                self.stop()
+            if self.patterns_count >= PATTERN_SLOTS:
+                # patterns are full
+                print("Cannot add any more patterns. Clear the selected patterns and try again.")
+            else:
+                # add the new pattern selected if the ID matches the existing pattern files
+                if 0 <= number <= NUMBER_OF_PATTERNS:
+                    # stop the audio first so it doesn't insert the pattern into a weird spot
+                    self.stop()
 
-                # add the audio track of the selected pattern
-                self.audioPlayer.addPattern(PATTERN_FILE + str(number) + ".wav")
+                    # add the audio track of the selected pattern
+                    # unless the pattern is 0, in which case it is a rest
+                    if number == 0:
+                        self.audioPlayer.addEmptyPattern()
+                    else:
+                        self.audioPlayer.addPattern(PATTERN_FILE + str(number) + ".wav")
 
-                # change the label on the screen
-                self.pattern_labels[self.patterns_count].config(text="Pattern " + str(number) + "\n\n")
+                    # change the label on the screen
+                    image = PhotoImage(file="images/pattern_" + str(number) + ".gif")
+                    self.pattern_labels[self.patterns_count].config(image=image)
+                    self.pattern_labels[self.patterns_count].photo = image
 
-                # update the number of patterns currently scanned
-                self.patterns_count += 1
+                    # update the number of patterns currently scanned
+                    self.patterns_count += 1
 
 
 root = Tk()

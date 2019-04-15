@@ -45,6 +45,11 @@ class AudioPlayer:
         self.patterns.append(decodedData)
         self.updatePatternTrack()
 
+    def addEmptyPattern(self):
+        data = numpy.zeros(int(self.total_frames/self.max_patterns), dtype=numpy.int16)
+        self.patterns.append(data)
+        self.updatePatternTrack()
+
     def updatePattern(self, file_name, index):
         if index >= len(self.patterns):
             raise Exception("Index out of bounds.")

@@ -147,16 +147,17 @@ def readAndWriteLoop():
 
     # loop for convenience until user types q or Q
     user_input = input("[R]ead from or [W]rite to card or [Q]uit: ")
-    while user_input != "q" or user_input != "Q":
+    while user_input != "q" and user_input != "Q":
         # read from cards loop
         if user_input == "r" or user_input == "R":
             readTag(DATA_PAGE)
 
         # write to cards loop
         elif user_input == "w" or user_input == "W":
+            user_input = "q" # set it to quit after this inner loop is done
             data_to_write = input("Data to write (4 byte hex - 8 char string) or [Q]uit: ")
 
-            while data_to_write != "q" or data_to_write != "Q":
+            while data_to_write != "q" and data_to_write != "Q":
                 if len(data_to_write) == 8:
                     writeTag(int(DATA_PAGE), data_to_write)
                 else:
@@ -164,7 +165,7 @@ def readAndWriteLoop():
 
                 # read from card to confirm write was successful
                 # Page numbers are sent as ints, not hex, to the reader
-                readTag(DATA_PAGE)
+                #readTag(DATA_PAGE)
 
                 data_to_write = input("Data to write (4 byte hex - 8 char string) or [Q]uit: ")
 
