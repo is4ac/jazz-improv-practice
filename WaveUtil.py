@@ -2,12 +2,13 @@ import numpy
 
 
 class WaveUtil:
-    def __init__(self, data=None, total_frames=3763200):
+    def __init__(self, data=None, total_frames=3763200, loop=True):
         if data is None:
             self.data = []
         else:
             self.data = [data] # store in an array so we can concatenate tracks later
 
+        self.loop = loop
         self.total_frames = total_frames # default value is 16 measures in 44,100 Hz
         self.current_frame = 0
         self.joined_data = self.joinData()
@@ -32,9 +33,11 @@ class WaveUtil:
 
         return_data = self.joined_data[index:index+stereoFrames]
 
-        if self.current_frame >= self.total_frames:
-            self.current_frame %= self.total_frames
-            return_data = numpy.append(return_data, self.joined_data[0:self.current_frame])
+        # loop the data back to the beginning if looping feature is on
+        if self.loop:
+            if self.current_frame >= self.total_frames:
+                self.current_frame %= self.total_frames
+                return_data = numpy.append(return_data, self.joined_data[0:self.current_frame])
 
         return return_data
 
