@@ -10,7 +10,8 @@ PATTERN_FILE = "audio/C_90_pattern_"
 NUMBER_OF_PATTERNS = 6
 # number of patterns that can be selected and played
 PATTERN_SLOTS = 4
-
+# background color of widgets
+BG_COLOR = "#2c3e50"
 
 class ImprovApp:
     def __init__(self, master):
@@ -21,6 +22,8 @@ class ImprovApp:
 
         self.label = Label(master, text="Scan the improv pattern cards and play along!\n\nSelected patterns:\n")
         self.label.grid(columnspan=8)
+        self.label["bg"] = BG_COLOR
+        self.label["fg"] = "#ecf0f1"
 
         self.pattern_labels = []
         for i in range(PATTERN_SLOTS):
@@ -28,6 +31,7 @@ class ImprovApp:
             photo = PhotoImage(file="images/pattern_rest.gif")
             patternImage = Label(master, image=photo)
             patternImage.photo = photo
+            patternImage["bg"] = BG_COLOR
             self.pattern_labels.append(patternImage)
             self.pattern_labels[i].grid(row=2, columnspan=2, column=i*2)
 
@@ -35,16 +39,16 @@ class ImprovApp:
         self.patterns_count = 0
 
         # add all the necessary buttons
-        self.play_pause_button = Button(master, text="Play", command=self.playAndPause)
+        self.play_pause_button = Button(master, text="Play", command=self.playAndPause, highlightbackground=BG_COLOR)
         self.play_pause_button.grid(row=5, column=2)
 
-        self.stop_button = Button(master, text="Stop", command=self.stop)
+        self.stop_button = Button(master, text="Stop", command=self.stop, highlightbackground=BG_COLOR)
         self.stop_button.grid(row=5, column=3)
 
-        self.clear_button = Button(master, text="Clear", command=self.clear)
+        self.clear_button = Button(master, text="Clear", command=self.clear, highlightbackground=BG_COLOR)
         self.clear_button.grid(row=5, column=4)
 
-        self.close_button = Button(master, text="Close", command=master.quit)
+        self.close_button = Button(master, text="Close", command=master.quit, highlightbackground=BG_COLOR)
         self.close_button.grid(row=5, column=5)
 
         self.audioPlayer = AudioPlayer()
@@ -128,5 +132,7 @@ class ImprovApp:
 
 
 root = Tk()
+# set background color
+root["bg"] = BG_COLOR
 my_gui = ImprovApp(root)
 root.mainloop()

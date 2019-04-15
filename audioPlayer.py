@@ -74,6 +74,7 @@ class AudioPlayer:
 
     def clearTracks(self):
         self.pattern_track.clearTracks()
+        self.patterns = []
 
     # define callback function for streaming
     def callback(self, in_data, frame_count, time_info, status):
