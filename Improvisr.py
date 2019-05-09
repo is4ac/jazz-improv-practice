@@ -11,7 +11,7 @@ NUMBER_OF_PATTERNS = 6
 # number of patterns that can be selected and played
 PATTERN_SLOTS = 4
 # background color of widgets
-BG_COLOR = "#2c3e50"
+BG_COLOR = "white"  # "#2c3e50"
 
 class ImprovApp:
     def __init__(self, master):
@@ -23,7 +23,7 @@ class ImprovApp:
         self.label = Label(master, text="Scan the improv pattern cards and play along!\n\nSelected patterns:\n")
         self.label.grid(columnspan=8)
         self.label["bg"] = BG_COLOR
-        self.label["fg"] = "#ecf0f1"
+        self.label["fg"] = "black"  # "#ecf0f1"
 
         self.pattern_labels = []
         for i in range(PATTERN_SLOTS):
